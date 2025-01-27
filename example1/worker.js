@@ -1,11 +1,23 @@
+let lastFrameTime = performance.now();
+
 self.onmessage = (event) => {
     const { width, height } = event.data;
-    const totalPixels = width * height * 4; ///RGBA
+    const totalPixels = width * height * 4; // RGBA
     const pixels = new Uint8ClampedArray(totalPixels);
 
     let shift = 0;
 
+    const calcFPS = () => {
+        const now = performance.now();
+        const deltaTime = now - lastFrameTime;
+        lastFrameTime = now;
+
+        return Math.round(1000 / deltaTime); // FPS 
+    };
+
     const updatePixels = () => {
+
+
         for (let y = 0; y < height; y++) {
             for (let x = 0; x < width; x++) {
                 const index = (y * width + x) * 4;
@@ -18,11 +30,12 @@ self.onmessage = (event) => {
         }
 
         shift = (shift + 1) % 256;
+        const fps = calcFPS();
+        self.postMessage({ pixels, fps });
 
-        self.postMessage(pixels);
-
-        setTimeout(updatePixels, 16); //  1000/16 = 62.5 FPS (~60)
+        setTimeout(updatePixels, 8); 
     };
+
 
     updatePixels();
 };
